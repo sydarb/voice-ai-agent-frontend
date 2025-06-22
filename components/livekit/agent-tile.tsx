@@ -16,17 +16,19 @@ export const AgentTile = ({
   return (
     <div ref={ref} className={cn(className)}>
       <BarVisualizer
-        barCount={5}
+        barCount={3}
         state={state}
-        options={{ minHeight: 5 }}
         trackRef={audioTrack}
-        className={cn('flex aspect-video w-40 items-center justify-center gap-1')}
+        className={cn(
+          'agent-waveform-bars',
+          'flex w-40 h-24 items-end justify-center gap-2 -rotate-90',
+        )}
       >
         <span
           className={cn([
-            'bg-muted min-h-4 w-4 rounded-full',
+            'bg-orange-900 h-full rounded-full',
             'origin-center transition-colors duration-250 ease-linear',
-            'data-[lk-highlighted=true]:bg-foreground data-[lk-muted=true]:bg-muted',
+            'data-[lk-highlighted=true]:bg-orange-700 data-[lk-muted=true]:bg-muted',
           ])}
         />
       </BarVisualizer>
