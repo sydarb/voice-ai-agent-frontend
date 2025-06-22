@@ -16,25 +16,25 @@ export default async function AppLayout({ children }: AppLayoutProps) {
         <a
           target="_blank"
           rel="noopener noreferrer"
-          href="https://livekit.io"
+          href="https://www.genesys.com/"
           className="scale-100 transition-transform duration-300 hover:scale-110"
         >
-          <img src={logo} alt={`${companyName} Logo`} className="block size-6 dark:hidden" />
+          <img src={logo} alt={`${companyName} Logo`} className="block h-8 w-auto dark:hidden" />
           <img
             src={logoDark ?? logo}
             alt={`${companyName} Logo`}
-            className="hidden size-6 dark:block"
+            className="hidden h-8 w-auto dark:block"
           />
         </a>
         <span className="text-foreground font-mono text-xs font-bold tracking-wider uppercase">
-          Built with{' '}
+          Built for{' '}
           <a
             target="_blank"
             rel="noopener noreferrer"
-            href="https://github.com/livekit/agents"
+            href="https://project/link/tba"
             className="underline underline-offset-4"
           >
-            LiveKit Agents
+            Hackathon-2025
           </a>
         </span>
       </header>

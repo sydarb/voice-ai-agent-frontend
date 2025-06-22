@@ -1,17 +1,17 @@
 import type { AppConfig } from './lib/types';
 
 export const APP_CONFIG_DEFAULTS: AppConfig = {
-  companyName: 'LiveKit',
-  pageTitle: 'Voice Assistant',
-  pageDescription: 'A voice assistant built with LiveKit',
+  companyName: 'Genesys',
+  pageTitle: 'Voice AI Agent',
+  pageDescription: 'A Voice AI Agent built for Genesys with LiveKit',
 
   suportsChatInput: true,
   suportsVideoInput: true,
   suportsScreenShare: true,
 
-  logo: '/lk-logo.svg',
+  logo: '/genesys-logo-light.png',
   accent: '#002cf2',
-  logoDark: '/lk-logo-dark.svg',
+  logoDark: '/genesys-logo-dark.webp',
   accentDark: '#1fd5f9',
   startButtonText: 'Start call',
 };
