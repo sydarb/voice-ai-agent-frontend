@@ -30,3 +30,20 @@ export interface SandboxConfig {
     | { type: 'boolean'; value: boolean }
     | null;
 }
+
+export interface CarouselCardItem {
+  title: string;
+  description: string;
+  imageUrl: string;
+  actionUrl: string;
+}
+
+export interface CarouselData {
+  type: 'carousel';
+  items: CarouselCardItem[];
+}
+
+export interface CompositeMessage {
+  spokenResponse: string;
+  ui: CarouselData;
+}

@@ -54,15 +54,15 @@ export const SessionView = ({
       >
         <div className="space-y-3 whitespace-pre-wrap">
           <AnimatePresence>
-            {messages.map((message: ReceivedChatMessage) => (
+            {messages.map((message: ReceivedChatMessage, index: number) => (
               <motion.div
-                key={message.id}
+                key={message.id || `msg-${index}`} // <-- Use index as a fallback key
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 1, height: 'auto', translateY: 0.001 }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
               >
-                <ChatEntry hideName key={message.id} entry={message} />
+                <ChatEntry hideName entry={message} />
               </motion.div>
             ))}
           </AnimatePresence>

@@ -2,6 +2,8 @@ import * as React from 'react';
 import type { MessageFormatter, ReceivedChatMessage } from '@livekit/components-react';
 import { cn } from '@/lib/utils';
 import { useChatMessage } from './hooks/utils';
+import { CarouselData, CompositeMessage } from '@/lib/types';
+import { Carousel } from '../../carousel';
 
 export interface ChatEntryProps extends React.HTMLAttributes<HTMLLIElement> {
   /** The chat massage object to display. */
@@ -12,6 +14,10 @@ export interface ChatEntryProps extends React.HTMLAttributes<HTMLLIElement> {
   hideTimestamp?: boolean;
   /** An optional formatter for the message body. */
   messageFormatter?: MessageFormatter;
+}
+
+function isCompositeMessage(data: any): data is CompositeMessage {
+  return data && typeof data.spokenResponse === 'string' && data.ui && data.ui.type === 'carousel';
 }
 
 export const ChatEntry = ({
@@ -26,6 +32,16 @@ export const ChatEntry = ({
 
   const isUser = entry.from?.isLocal ?? false;
   const messageOrigin = isUser ? 'remote' : 'local';
+
+  let compositeMessage: CompositeMessage | null = null;
+  try {
+    const parsedMessage = JSON.parse(message);
+    if (isCompositeMessage(parsedMessage)) {
+      compositeMessage = parsedMessage;
+    }
+  } catch (error) {
+    // Not a JSON message, treat as plain text
+  }
 
   return (
     <li
@@ -47,9 +63,16 @@ export const ChatEntry = ({
         </span>
       )}
 
-      <span className={cn('max-w-4/5 rounded-[20px] p-2', isUser ? 'bg-muted ml-auto' : 'mr-auto')}>
-        {message}
-      </span>
+      {compositeMessage ? (
+        <div className={cn('flex flex-col gap-2 rounded-[20px] p-2', isUser ? 'bg-muted ml-auto' : 'mr-auto')}>
+          <span>{compositeMessage.spokenResponse}</span>
+          <Carousel items={compositeMessage.ui.items} />
+        </div>
+      ) : (
+        <span className={cn('max-w-4/5 rounded-[20px] p-2', isUser ? 'bg-muted ml-auto' : 'mr-auto')}>
+          {message}
+        </span>
+      )}
     </li>
   );
 };
