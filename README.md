@@ -1,3 +1,18 @@
+## Local Setup
+1. **Install**
+    ```bash
+    brew install node
+    brew install pnpm
+    git clone https://github.com/sydarb/voice-ai-agent-frontend.git
+    cd voice-ai-agent-frontend
+    pnpm install
+    ```
+2. **Create a copy** of `/.env.example` at `/.env.local` with valid credentials
+3. **Run**
+    ```bash
+    pnpm dev
+    ```
+---
 <img src="./.github/assets/app-icon.png" alt="Voice Assistant App Icon" width="100" height="100">
 
 # Web Voice Assistant
