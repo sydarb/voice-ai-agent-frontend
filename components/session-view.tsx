@@ -62,7 +62,7 @@ export const SessionView = ({
                 exit={{ opacity: 1, height: 'auto', translateY: 0.001 }}
                 transition={{ duration: 0.5, ease: 'easeOut' }}
               >
-                <ChatEntry hideName entry={message} />
+                <ChatEntry hideName entry={message} onSendMessage={handleSendMessage} />
               </motion.div>
             ))}
           </AnimatePresence>

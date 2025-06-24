@@ -14,6 +14,8 @@ export interface ChatEntryProps extends React.HTMLAttributes<HTMLLIElement> {
   hideTimestamp?: boolean;
   /** An optional formatter for the message body. */
   messageFormatter?: MessageFormatter;
+  /** Function to send messages to the agent. */
+  onSendMessage?: (message: string) => void;
 }
 
 function isCompositeMessage(data: any): data is CompositeMessage {
@@ -26,6 +28,7 @@ export const ChatEntry = ({
   hideName,
   hideTimestamp,
   className,
+  onSendMessage,
   ...props
 }: ChatEntryProps) => {
   const { message, hasBeenEdited, time, locale, name } = useChatMessage(entry, messageFormatter);
@@ -35,9 +38,11 @@ export const ChatEntry = ({
 
   let compositeMessage: CompositeMessage | null = null;
   try {
-    const parsedMessage = JSON.parse(message);
-    if (isCompositeMessage(parsedMessage)) {
-      compositeMessage = parsedMessage;
+    if (typeof message === 'string') {
+      const parsedMessage = JSON.parse(message);
+      if (isCompositeMessage(parsedMessage)) {
+        compositeMessage = parsedMessage;
+      }
     }
   } catch (error) {
     // Not a JSON message, treat as plain text
@@ -64,9 +69,9 @@ export const ChatEntry = ({
       )}
 
       {compositeMessage ? (
-        <div className={cn('flex flex-col gap-2 rounded-[20px] p-2', isUser ? 'bg-muted ml-auto' : 'mr-auto')}>
-          <span>{compositeMessage.spokenResponse}</span>
-          <Carousel items={compositeMessage.ui.items} />
+        <div className={cn('flex flex-col gap-2 rounded-[20px] p-2 min-w-0', isUser ? 'bg-muted ml-auto' : 'mr-auto')} style={{ maxWidth: '100%' }}>
+          <span className="sticky left-0 bg-inherit z-10">{compositeMessage.spokenResponse}</span>
+          <Carousel items={compositeMessage.ui.items} onSendToAgent={onSendMessage} />
         </div>
       ) : (
         <span className={cn('max-w-4/5 rounded-[20px] p-2', isUser ? 'bg-muted ml-auto' : 'mr-auto')}>
