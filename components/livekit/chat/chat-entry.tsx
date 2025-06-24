@@ -32,7 +32,7 @@ export interface ChatEntryProps extends React.HTMLAttributes<HTMLLIElement> {
 }
 
 function isCompositeMessage(data: any): data is CompositeMessage {
-  return data && typeof data.spokenResponse === 'string' && data.ui && data.ui.type === 'carousel';
+  return data && typeof data.spokenResponse === 'string' && ((data.ui && data.ui.type === 'carousel')||(data.ui_actions && data.ui_actions.type === 'ui_action'));
 }
 
 export const ChatEntry = ({
