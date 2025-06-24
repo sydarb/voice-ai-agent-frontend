@@ -2,8 +2,21 @@ import * as React from 'react';
 import type { MessageFormatter, ReceivedChatMessage } from '@livekit/components-react';
 import { cn } from '@/lib/utils';
 import { useChatMessage } from './hooks/utils';
-import { CarouselData, CompositeMessage } from '@/lib/types';
+import { CarouselData, CompositeMessage, CarouselCardItem } from '@/lib/types';
 import { Carousel } from '../../carousel';
+
+// global state for last carousel
+let lastCarouselRef: { items: CarouselCardItem[], selectItem: (index: number) => void } | null = null;
+
+const setLastCarousel = (ref: { items: CarouselCardItem[], selectItem: (index: number) => void }) => {
+  lastCarouselRef = ref;
+};
+
+const selectInLastCarousel = (index: number) => {
+  if (lastCarouselRef) {
+    lastCarouselRef.selectItem(index);
+  }
+};
 
 export interface ChatEntryProps extends React.HTMLAttributes<HTMLLIElement> {
   /** The chat massage object to display. */
@@ -37,16 +50,39 @@ export const ChatEntry = ({
   const messageOrigin = isUser ? 'remote' : 'local';
 
   let compositeMessage: CompositeMessage | null = null;
+  let selectionIndex: number | undefined = undefined;
+  let hasUiActions = false;
+  
   try {
     if (typeof message === 'string') {
       const parsedMessage = JSON.parse(message);
       if (isCompositeMessage(parsedMessage)) {
         compositeMessage = parsedMessage;
       }
+      
+      // Check for ui_actions
+      if (parsedMessage.ui_actions && parsedMessage.ui_actions.type === 'ui_action' && 
+          parsedMessage.ui_actions.action === 'select_item' && 
+          typeof parsedMessage.ui_actions.payload?.index === 'number') {
+        hasUiActions = true;
+        selectionIndex = parsedMessage.ui_actions.payload.index;
+      }
     }
   } catch (error) {
     // Not a JSON message, treat as plain text
   }
+  
+  // Handle ui_actions - always select in last carousel
+  React.useEffect(() => {
+    if (hasUiActions && typeof selectionIndex === 'number') {
+      selectInLastCarousel(selectionIndex);
+    }
+  }, [hasUiActions, selectionIndex]);
+  
+  // When ui_actions is present, show spoken response but no carousel
+  const showCarousel = compositeMessage && !hasUiActions;
+  
+
 
   return (
     <li
@@ -68,11 +104,20 @@ export const ChatEntry = ({
         </span>
       )}
 
-      {compositeMessage ? (
+      {compositeMessage && showCarousel ? (
         <div className={cn('flex flex-col gap-2 rounded-[20px] p-2 min-w-0', isUser ? 'bg-muted ml-auto' : 'mr-auto')} style={{ maxWidth: '100%' }}>
           <span className="sticky left-0 bg-inherit z-10">{compositeMessage.spokenResponse}</span>
-          <Carousel items={compositeMessage.ui.items} onSendToAgent={onSendMessage} />
+          <Carousel 
+            items={compositeMessage.ui.items} 
+            onSendToAgent={onSendMessage}
+            agentSelectionIndex={undefined}
+            onCarouselMount={setLastCarousel}
+          />
         </div>
+      ) : compositeMessage ? (
+        <span className={cn('max-w-4/5 rounded-[20px] p-2', isUser ? 'bg-muted ml-auto' : 'mr-auto')}>
+          {compositeMessage.spokenResponse}
+        </span>
       ) : (
         <span className={cn('max-w-4/5 rounded-[20px] p-2', isUser ? 'bg-muted ml-auto' : 'mr-auto')}>
           {message}

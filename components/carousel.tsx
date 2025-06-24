@@ -7,9 +7,11 @@ interface CarouselProps {
   items: CarouselCardItem[];
   onSelectionChange?: (selectedItem: CarouselCardItem | null) => void;
   onSendToAgent?: (message: string) => void;
+  agentSelectionIndex?: number; 
+  onCarouselMount?: (ref: { items: CarouselCardItem[], selectItem: (index: number) => void }) => void;
 }
 
-export function Carousel({ items, onSelectionChange, onSendToAgent }: CarouselProps) {
+export function Carousel({ items, onSelectionChange, onSendToAgent, agentSelectionIndex, onCarouselMount }: CarouselProps) {
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = React.useState(false);
@@ -21,6 +23,14 @@ export function Carousel({ items, onSelectionChange, onSendToAgent }: CarouselPr
     setSelectedId(item.actionUrl);
     onSelectionChange?.(item);
     onSendToAgent?.(`Selected: ${item.title}`);
+  };
+  
+  const selectItemByIndex = (index: number) => {
+    if (items[index] && !selectedId) {
+      const item = items[index];
+      setSelectedId(item.actionUrl);
+      onSelectionChange?.(item);
+    }
   };
 
   const checkScrollButtons = () => {
@@ -40,6 +50,20 @@ export function Carousel({ items, onSelectionChange, onSendToAgent }: CarouselPr
       });
     }
   };
+
+  // Handle agent selection by index
+  React.useEffect(() => {
+    if (typeof agentSelectionIndex === 'number' && !selectedId && items[agentSelectionIndex]) {
+      const item = items[agentSelectionIndex];
+      setSelectedId(item.actionUrl);
+      onSelectionChange?.(item);
+    }
+  }, [agentSelectionIndex, selectedId, items, onSelectionChange]);
+
+  // Register this carousel as the latest one
+  React.useEffect(() => {
+    onCarouselMount?.({ items, selectItem: selectItemByIndex });
+  }, [items, onCarouselMount]);
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
