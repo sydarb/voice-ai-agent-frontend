@@ -49,24 +49,46 @@ export const ChatEntry = ({
   const isUser = entry.from?.isLocal ?? false;
   const messageOrigin = isUser ? 'remote' : 'local';
 
-  let compositeMessage: CompositeMessage | null = null;
-  
-  try {
-    if (typeof message === 'string') {
-      const parsedMessage = JSON.parse(message);
-      if (isCompositeMessage(parsedMessage)) {
-        compositeMessage = parsedMessage;
+  const [compositeMessage, setCompositeMessage] = React.useState<CompositeMessage | null>(null);
+
+  React.useEffect(() => {
+    if (typeof message === 'string' && message.trim().startsWith('{')) {
+      try {
+        const parsedMessage = JSON.parse(message);
+        if (isCompositeMessage(parsedMessage)) {
+          setCompositeMessage(parsedMessage);
+        }
+      } catch (e) {
+        // Not a full JSON yet, do nothing
       }
+    } else if (compositeMessage) {
+        // Reset if the message is no longer a composite message
+        setCompositeMessage(null);
     }
-  } catch (error) {
-    // Not a JSON message, treat as plain text
-  }
-  
+  }, [message]);
+
   React.useEffect(() => {
     if (compositeMessage?.ui_actions?.action === 'select_item') {
       selectInLastCarousel(compositeMessage.ui_actions.payload.index);
     }
   }, [compositeMessage]);
+  
+  const showCarousel = compositeMessage?.ui?.type === 'carousel';
+
+  let displayMessage = message;
+  if(compositeMessage){
+    displayMessage = compositeMessage.spokenResponse;
+  } else if (typeof message === 'string' && message.trim().startsWith('{')) {
+      // It's likely a streaming, incomplete JSON
+      const match = message.match(/"spokenResponse"\s*:\s*"([^"]*)/);
+      if (match && match[1]) {
+        displayMessage = match[1];
+      } else {
+        // If we can't even find a partial spokenResponse, don't show anything
+        displayMessage = '...';
+      }
+  }
+
 
   return (
     <li
@@ -88,10 +110,9 @@ export const ChatEntry = ({
         </span>
       )}
 
-      {compositeMessage ? (
-        <div className={cn('flex flex-col gap-2 rounded-[20px] p-2 min-w-0', isUser ? 'bg-muted ml-auto' : 'mr-auto')} style={{ maxWidth: '100%' }}>
-          <span className="sticky left-0 bg-inherit z-10">{compositeMessage.spokenResponse}</span>
-          {compositeMessage.ui?.type === 'carousel' && (
+      <div className={cn('flex flex-col gap-2 rounded-[20px] p-2 min-w-0', isUser ? 'bg-muted ml-auto' : 'mr-auto')} style={{ maxWidth: '100%' }}>
+          <span className="sticky left-0 bg-inherit z-10">{displayMessage}</span>
+          {showCarousel && (
             <Carousel 
               items={compositeMessage.ui.items} 
               onSendToAgent={onSendMessage}
@@ -99,11 +120,6 @@ export const ChatEntry = ({
             />
           )}
         </div>
-      ) : (
-        <span className={cn('max-w-4/5 rounded-[20px] p-2', isUser ? 'bg-muted ml-auto' : 'mr-auto')}>
-          {message}
-        </span>
-      )}
     </li>
   );
 };
