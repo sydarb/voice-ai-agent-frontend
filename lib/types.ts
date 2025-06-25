@@ -43,7 +43,16 @@ export interface CarouselData {
   items: CarouselCardItem[];
 }
 
+export interface UiAction {
+  type: 'ui_action';
+  action: 'select_item';
+  payload: {
+    index: number;
+  };
+}
+
 export interface CompositeMessage {
   spokenResponse: string;
-  ui: CarouselData;
+  ui?: CarouselData;
+  ui_actions?: UiAction;
 }

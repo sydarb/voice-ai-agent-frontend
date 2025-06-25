@@ -32,7 +32,7 @@ export interface ChatEntryProps extends React.HTMLAttributes<HTMLLIElement> {
 }
 
 function isCompositeMessage(data: any): data is CompositeMessage {
-  return data && typeof data.spokenResponse === 'string' && ((data.ui && data.ui.type === 'carousel')||(data.ui_actions && data.ui_actions.type === 'ui_action'));
+  return data && typeof data.spokenResponse === 'string' && (data.ui || data.ui_actions);
 }
 
 export const ChatEntry = ({
@@ -50,8 +50,6 @@ export const ChatEntry = ({
   const messageOrigin = isUser ? 'remote' : 'local';
 
   let compositeMessage: CompositeMessage | null = null;
-  let selectionIndex: number | undefined = undefined;
-  let hasUiActions = false;
   
   try {
     if (typeof message === 'string') {
@@ -59,30 +57,16 @@ export const ChatEntry = ({
       if (isCompositeMessage(parsedMessage)) {
         compositeMessage = parsedMessage;
       }
-      
-      // Check for ui_actions
-      if (parsedMessage.ui_actions && parsedMessage.ui_actions.type === 'ui_action' && 
-          parsedMessage.ui_actions.action === 'select_item' && 
-          typeof parsedMessage.ui_actions.payload?.index === 'number') {
-        hasUiActions = true;
-        selectionIndex = parsedMessage.ui_actions.payload.index;
-      }
     }
   } catch (error) {
     // Not a JSON message, treat as plain text
   }
   
-  // Handle ui_actions - always select in last carousel
   React.useEffect(() => {
-    if (hasUiActions && typeof selectionIndex === 'number') {
-      selectInLastCarousel(selectionIndex);
+    if (compositeMessage?.ui_actions?.action === 'select_item') {
+      selectInLastCarousel(compositeMessage.ui_actions.payload.index);
     }
-  }, [hasUiActions, selectionIndex]);
-  
-  // When ui_actions is present, show spoken response but no carousel
-  const showCarousel = compositeMessage && !hasUiActions;
-  
-
+  }, [compositeMessage]);
 
   return (
     <li
@@ -104,20 +88,17 @@ export const ChatEntry = ({
         </span>
       )}
 
-      {compositeMessage && showCarousel ? (
+      {compositeMessage ? (
         <div className={cn('flex flex-col gap-2 rounded-[20px] p-2 min-w-0', isUser ? 'bg-muted ml-auto' : 'mr-auto')} style={{ maxWidth: '100%' }}>
           <span className="sticky left-0 bg-inherit z-10">{compositeMessage.spokenResponse}</span>
-          <Carousel 
-            items={compositeMessage.ui.items} 
-            onSendToAgent={onSendMessage}
-            agentSelectionIndex={undefined}
-            onCarouselMount={setLastCarousel}
-          />
+          {compositeMessage.ui?.type === 'carousel' && (
+            <Carousel 
+              items={compositeMessage.ui.items} 
+              onSendToAgent={onSendMessage}
+              onCarouselMount={setLastCarousel}
+            />
+          )}
         </div>
-      ) : compositeMessage ? (
-        <span className={cn('max-w-4/5 rounded-[20px] p-2', isUser ? 'bg-muted ml-auto' : 'mr-auto')}>
-          {compositeMessage.spokenResponse}
-        </span>
       ) : (
         <span className={cn('max-w-4/5 rounded-[20px] p-2', isUser ? 'bg-muted ml-auto' : 'mr-auto')}>
           {message}
