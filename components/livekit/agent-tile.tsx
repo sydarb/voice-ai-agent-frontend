@@ -26,9 +26,9 @@ export const AgentTile = ({
       >
         <span
           className={cn([
-            'bg-orange-900 h-full rounded-full',
+            'bg-orange-700 h-full rounded-full',
             'origin-center transition-colors duration-250 ease-linear',
-            'data-[lk-highlighted=true]:bg-orange-700 data-[lk-muted=true]:bg-muted',
+            'data-[lk-highlighted=true]:bg-orange-600 data-[lk-muted=true]:bg-muted',
           ])}
         />
       </BarVisualizer>

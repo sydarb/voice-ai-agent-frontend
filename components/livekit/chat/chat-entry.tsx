@@ -80,7 +80,7 @@ export const ChatEntry = ({
     displayMessage = compositeMessage.spokenResponse;
   } else if (typeof message === 'string' && message.trim().startsWith('{')) {
       // It's likely a streaming, incomplete JSON
-      const match = message.match(/"spokenResponse"\s*:\s*"([^"]*)/);
+      const match = message.match(/"spokenResponse"\s*:\s*"((?:\\"|[^"])*)/);
       if (match && match[1]) {
         displayMessage = match[1];
       } else {
